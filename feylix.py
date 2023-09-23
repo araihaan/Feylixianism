@@ -7,7 +7,6 @@ import dxcam
 from colorama import Fore, Style
 from time import sleep, time
 import random
-import time
 
 # Settings
 COM_PORT = "COM12"  # The COM port number for your Arduino. This can be found in the Device Manager.
