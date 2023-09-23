@@ -7,13 +7,16 @@ import dxcam
 from colorama import Fore, Style
 from time import sleep, time
 import random
+import time
+import pyMeow
 
 # Settings
 COM_PORT = "COM12"  # The COM port number for your Arduino. This can be found in the Device Manager.
-X_FOV = 300  # Field of view for the X-axis.
-Y_FOV = 300  # Field of view for the Y-axis.
-AIM_KEY = 0x02  # Key code for aim action. See https://t.ly/qtrot for full key codes.
+X_FOV = 100  # Field of view for the X-axis.
+Y_FOV = 100  # Field of view for the Y-axis.
+AIM_KEY = 0x01  # Key code for aim action. See https://t.ly/qtrot for full key codes.
 TRIGGER_KEY = 0x12  # Key code for trigger action. See https://t.ly/qtrot for full key codes.
+XYSPEED = 1.5
 LOWER_COLOR = [30, 125, 150]
 UPPER_COLOR = [30, 255, 255]
 camera = dxcam.create(output_idx=0, output_color="BGR")  # Initialize the camera with settings
@@ -21,9 +24,8 @@ camera = dxcam.create(output_idx=0, output_color="BGR")  # Initialize the camera
 class Feylix:
     def listen(self):
         while True:
-            self.run("aim")
-            #if win32api.GetAsyncKeyState(AIM_KEY) < 0:
-                #self.run("aim")
+            if win32api.GetAsyncKeyState(AIM_KEY) < 0:
+                self.run("aim")
             #if win32api.GetAsyncKeyState(TRIGGER_KEY) < 0:
                 #self.run("click")
                 
@@ -52,13 +54,19 @@ class Feylix:
             x, y, w, h = cv2.boundingRect(closest_contour)
             center = (x + w // 2, y + h // 2)
             cX = center[0]
-            cY = y + (h * 0.2)
+            cY = y + (h * 0.3)
             cYcenter = center[1] - Y_FOV // 2
             x_diff = cX - X_FOV // 2
             y_diff = cY - Y_FOV // 2
+            
+            ema_x = 0.0
+            ema_y = 0.0
+            alpha = 0.2  # Koefisien smoothing (biasanya antara 0.1 hingga 0.3)
+            ema_x = (1 - alpha) * ema_x + alpha * x_diff
+            ema_y = (1 - alpha) * ema_y + alpha * y_diff
 
             if action == "aim":
-                self.MoveGaussian(x_diff, y_diff)
+                Mouse().move(ema_x * XYSPEED, ema_y * XYSPEED)
             
             if action == "click":
                 reaction_time = random.uniform(0.075, 0.125)
@@ -155,8 +163,7 @@ class Mouse:
         # self.serial_port.write(f'{float(self.current_speed_x)},{float(self.current_speed_y)}\n'.encode())
         # print (float(self.current_speed_x), float(self.current_speed_y))
         # Add a small delay to control the speed of mouse movement
-        sleep(0.001)  # Use the 'sleep' function from the 'time' module
-        
+        #sleep(0.001)  # Use the 'sleep' function from the 'time' module
         self.serial_port.write(f'{float(x)},{float(y)}\n'.encode())
 
     def click(self):
