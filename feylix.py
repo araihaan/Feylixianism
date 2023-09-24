@@ -8,15 +8,14 @@ from colorama import Fore, Style
 from time import sleep, time
 import random
 import time
-import pyMeow
 
 # Settings
 COM_PORT = "COM12"  # The COM port number for your Arduino. This can be found in the Device Manager.
-X_FOV = 100  # Field of view for the X-axis.
-Y_FOV = 100  # Field of view for the Y-axis.
+X_FOV = 90  # Field of view for the X-axis.
+Y_FOV = 90  # Field of view for the Y-axis.
 AIM_KEY = 0x01  # Key code for aim action. See https://t.ly/qtrot for full key codes.
 TRIGGER_KEY = 0x12  # Key code for trigger action. See https://t.ly/qtrot for full key codes.
-XYSPEED = 1.5
+XYSPEED = 3
 LOWER_COLOR = [30, 125, 150]
 UPPER_COLOR = [30, 255, 255]
 camera = dxcam.create(output_idx=0, output_color="BGR")  # Initialize the camera with settings
@@ -26,8 +25,8 @@ class Feylix:
         while True:
             if win32api.GetAsyncKeyState(AIM_KEY) < 0:
                 self.run("aim")
-            #if win32api.GetAsyncKeyState(TRIGGER_KEY) < 0:
-                #self.run("click")
+            if win32api.GetAsyncKeyState(TRIGGER_KEY) < 0:
+                self.run("click")
                 
     def run(self, action):
         hsv = cv2.cvtColor(Capture().get_screen(), cv2.COLOR_BGR2HSV)
