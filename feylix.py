@@ -53,8 +53,8 @@ class Feylix:
                     while keyPressed(key):
                         pass
 
-                elif ((mode == "Toggle" and clicked) or mode == "Holding" and keyPressed(key)) and not any([keyPressed("W"), keyPressed("A"), keyPressed("S"), keyPressed("D")]):
-                    self.run("aim")
+                elif ((mode == "Toggle" and clicked) or mode == "Holding" and keyPressed(key)) and not any([win32api.GetAsyncKeyState(AIM_KEY),keyPressed("W"), keyPressed("A"), keyPressed("S"), keyPressed("D")]):
+                    self.run("tbaim")
                     enemy = uiPasteFunctions.findEnemyTrigger(int(fovX), int(fovY))
                     if enemy:
                         Feylix.shoot()
@@ -103,6 +103,8 @@ class Feylix:
 
             if action == "aim":
                 Mouse().move(ema_x * XYSPEED, ema_y * XYSPEED + recoilY)
+            if action == "tbaim":
+                Mouse().move(ema_x * XYSPEED, ema_y * XYSPEED)
             
         
     def loadConfig(self):
