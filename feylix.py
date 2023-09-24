@@ -16,6 +16,7 @@ Y_FOV = 90  # Field of view for the Y-axis.
 AIM_KEY = 0x01  # Key code for aim action. See https://t.ly/qtrot for full key codes.
 TRIGGER_KEY = 0x12  # Key code for trigger action. See https://t.ly/qtrot for full key codes.
 XYSPEED = 3
+recoilY = 8
 LOWER_COLOR = [30, 125, 150]
 UPPER_COLOR = [30, 255, 255]
 camera = dxcam.create(output_idx=0, output_color="BGR")  # Initialize the camera with settings
@@ -65,7 +66,7 @@ class Feylix:
             ema_y = (1 - alpha) * ema_y + alpha * y_diff
 
             if action == "aim":
-                Mouse().move(ema_x * XYSPEED, ema_y * XYSPEED)
+                Mouse().move(ema_x * XYSPEED, ema_y * XYSPEED + recoilY)
             
             if action == "click":
                 reaction_time = random.uniform(0.075, 0.125)
