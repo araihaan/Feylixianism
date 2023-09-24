@@ -11,14 +11,14 @@ import time
 
 # Settings
 COM_PORT = "COM12"  # The COM port number for your Arduino. This can be found in the Device Manager.
-X_FOV = 90  # Field of view for the X-axis.
-Y_FOV = 90  # Field of view for the Y-axis.
+X_FOV = 70  # Field of view for the X-axis.
+Y_FOV = 70  # Field of view for the Y-axis.
 AIM_KEY = 0x01  # Key code for aim action. See https://t.ly/qtrot for full key codes.
 TRIGGER_KEY = 0x12  # Key code for trigger action. See https://t.ly/qtrot for full key codes.
 XYSPEED = 3
-recoilY = 8
-LOWER_COLOR = [30, 125, 150]
-UPPER_COLOR = [30, 255, 255]
+recoilY = 3
+LOWER_COLOR = [140, 120, 180]
+UPPER_COLOR = [160, 200, 255]
 camera = dxcam.create(output_idx=0, output_color="BGR")  # Initialize the camera with settings
 
 class Feylix:

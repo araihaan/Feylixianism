@@ -6,21 +6,24 @@ import serial
 import dxcam
 from colorama import Fore, Style
 from time import sleep
-import random
 
 # Settings
 COM_PORT = "COM12"  # The COM port number for your Arduino. This can be found in the Device Manager.
-X_FOV = 70  # Field of view for the X-axis.
-Y_FOV = 70  # Field of view for the Y-axis.
-AIM_KEY = 0x02  # Key code for aim action. See https://t.ly/qtrot for full key codes.
-TRIGGER_KEY = 0x12  # Key code for trigger action. See https://t.ly/qtrot for full key codes.
-X_SPEED = 0.7  # Speed of mouse movement along the X-axis. Lower values make it slower.
-Y_SPEED = 0.7  # Speed of mouse movement along the Y-axis. Lower values make it slower.
+X_FOV = 100  # Field of view for the X-axis.
+Y_FOV = 100  # Field of view for the Y-axis.
+AIM_KEY = 0x01  # Key code for aim task. See https://t.ly/qtrot for full key codes.
+TRIGGER_KEY = 0x12  # Key code for trigger task. See https://t.ly/qtrot for full key codes.
+X_SPEED = 0.5  # Speed of mouse movement along the X-axis. Lower values make it slower.
+Y_SPEED = 0.5  # Speed of mouse movement along the Y-axis. Lower values make it slower.
+AIM_OFFSET = 7 #Higher value will make it aim lower
 LOWER_COLOR = [140, 120, 180]
 UPPER_COLOR = [160, 200, 255]
 camera = dxcam.create(output_idx=0, output_color="BGR") # Initialize the camera with settings
 
 class Prozac:
+    def __init__(self):
+        self.mouse = Mouse()
+    
     def listen(self):
         while True:
             if win32api.GetAsyncKeyState(AIM_KEY) < 0:
@@ -28,7 +31,7 @@ class Prozac:
             if win32api.GetAsyncKeyState(TRIGGER_KEY) < 0:
                 self.run("click")
                 
-    def run(self, action):
+    def run(self, task):
         hsv = cv2.cvtColor(Capture().get_screen(), cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, np.array(LOWER_COLOR), np.array(UPPER_COLOR))
         kernel = np.ones((3, 3), np.uint8)
@@ -51,22 +54,19 @@ class Prozac:
                     closest_contour = contour
 
             x, y, w, h = cv2.boundingRect(closest_contour)
-            center = (x + w // 2, y + h // 2)
-            cX = center[0]
-            cY = y + (h * 0.2)
-            cYcenter = center[1] - Y_FOV // 2
-            x_diff = cX - X_FOV // 2
-            y_diff = cY - Y_FOV // 2
+            cX = x + w // 2
+            top_most_y = y + AIM_OFFSET
 
-            if action == "aim":
-                Mouse().move(x_diff * X_SPEED, y_diff * Y_SPEED)
-            
-            if action == "click":
-                reaction_time = random.uniform(0.075, 0.125)
-                sleep(reaction_time)
-                if abs(x_diff) <= 3 and abs(y_diff) <= 7:  # Dirty implementation of a trigger bot. This may be refined later.
-                    Mouse().click()
-                    
+            x_offset = cX - screen_center[0]
+            y_offset = top_most_y - screen_center[1]
+
+            if task == "aim":
+                self.mouse.move(x_offset * X_SPEED, y_offset * Y_SPEED)
+
+            if task == "click":
+                if abs(x_offset) <= 3 and abs(y_offset) <= 7:
+                    self.mouse.click()
+
 class Mouse:
     def __init__(self):
         self.serial_port = serial.Serial()
@@ -75,8 +75,9 @@ class Mouse:
         self.serial_port.port = COM_PORT
         try:
             self.serial_port.open()
+            print(f"{Fore.GREEN}\t\t\t\t\b\b[SUCCESS]{Style.RESET_ALL} Connected to Arduino Leonardo on '{COM_PORT}'!")
         except serial.SerialException:
-            print(f"{Fore.RED}[ERROR]{Style.RESET_ALL} Failed to connect because the specified COM port was not found.")
+            print(f"{Fore.RED}\t\t[ERROR]{Style.RESET_ALL} Failed to connect because the specified COM port was not found, exiting...")
             sleep(10)
 
     def move(self, x, y):
