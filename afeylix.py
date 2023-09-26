@@ -17,11 +17,9 @@ X_FOV = 70  # Field of view for the X-axis.
 Y_FOV = 70  # Field of view for the Y-axis.
 AIM_KEY = 0x01  # Key code for aim action. See https://t.ly/qtrot for full key codes.
 XYSPEED = 3
-recoilY = 15
-XYSPEEDIdle = 1
-LOWER_COLOR = [150, 118, 235]
-UPPER_COLOR = [156, 180, 255]
-
+recoilY = 5
+LOWER_COLOR = [140, 120, 180]
+UPPER_COLOR = [160, 200, 255]
 HumanTb = random.uniform(0.0075,0.0125)
 camera = dxcam.create(output_idx=0, output_color="BGR")  # Initialize the camera with settings
 
@@ -32,10 +30,8 @@ class Feylix:
     def listen(self):
         clicked = False
         while True:
-            self.run("idle")
             if win32api.GetAsyncKeyState(AIM_KEY) < 0:
                 self.run("aim")
-                
             try:
                 key = varManager.getVar("key", "TRIGGER")
                 fovX = varManager.getVar("fovx", "TRIGGER")
@@ -59,14 +55,11 @@ class Feylix:
                         pass
 
                 elif ((mode == "Toggle" and clicked) or mode == "Holding" and keyPressed(key)) and not any([win32api.GetAsyncKeyState(AIM_KEY),keyPressed("W"), keyPressed("A"), keyPressed("S"), keyPressed("D")]):
-                    # self.run("tbaim")
+                    self.run("tbaim")
                     enemy = uiPasteFunctions.findEnemyTrigger(int(fovX), int(fovY))
                     if enemy:
                         Feylix.shoot()
                         time.sleep(200 * delay / 1000)
-                        
-                # elif ((mode == "Toggle" and clicked)):
-                #     self.run("tbaim")
 
                 time.sleep(0.005)
             except Exception as e:
@@ -103,27 +96,25 @@ class Feylix:
             x_diff = cX - X_FOV // 2
             y_diff = cY - Y_FOV // 2
             
-            tbcY = y + (h * 0.28)
+            tbcY = y + (h * 0.2)
             tbcYcenter = center[1] - Y_FOV // 2
             tbx_diff = cX - X_FOV // 2
             tby_diff = tbcY - Y_FOV // 2
             
             ema_x = 0.0
             ema_y = 0.0
-            alpha = 0.3  # Koefisien smoothing (biasanya antara 0.1 hingga 0.3)
+            alpha = 0.2  # Koefisien smoothing (biasanya antara 0.1 hingga 0.3)
             ema_x = (1 - alpha) * ema_x + alpha * x_diff
             ema_y = (1 - alpha) * ema_y + alpha * y_diff
             
             tbema_x = 0.0
             tbema_y = 0.0
-            tbalpha = 0.2  # Koefisien smoothing (biasanya antara 0.1 hingga 0.3)
+            tbalpha = 0.1  # Koefisien smoothing (biasanya antara 0.1 hingga 0.3)
             tbema_x = (1 - tbalpha) * tbema_x + tbalpha * tbx_diff
             tbema_y = (1 - tbalpha) * tbema_y + tbalpha * tby_diff
 
-            if action == "idle":
-                Mouse().move(tbema_x * XYSPEEDIdle, tbema_y * XYSPEEDIdle)
             if action == "aim":
-                Mouse().move(ema_x * XYSPEED, ema_y * XYSPEED)
+                Mouse().move(ema_x * XYSPEED, ema_y * XYSPEED + recoilY)
             if action == "tbaim":
                 Mouse().move(tbema_x * XYSPEED, tbema_y * XYSPEED)
             
